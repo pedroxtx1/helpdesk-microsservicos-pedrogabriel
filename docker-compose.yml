@@ -1,0 +1,131 @@
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      USUARIOS_URL: http://usuarios:8000
+      INVENTARIO_URL: http://inventario:8000
+      CHAMADOS_URL: http://chamados:8000
+      NOTIFICACOES_URL: http://notificacoes:8000
+    depends_on:
+      usuarios: { condition: service_healthy }
+      inventario: { condition: service_healthy }
+      chamados: { condition: service_healthy }
+      notificacoes: { condition: service_healthy }
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    restart: unless-stopped
+
+  usuarios:
+    build:
+      context: .
+      dockerfile: services/usuarios/Dockerfile
+    env_file: .env
+    environment:
+      USUARIOS_DATABASE_URL: sqlite:////dados/usuarios.db
+      DADOS_EXEMPLO: ${DADOS_EXEMPLO:-1}
+    volumes: [usuarios_data:/dados]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/saude')"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    restart: unless-stopped
+
+  inventario:
+    build:
+      context: .
+      dockerfile: services/inventario/Dockerfile
+    env_file: .env
+    environment:
+      INVENTARIO_DATABASE_URL: sqlite:////dados/inventario.db
+      DADOS_EXEMPLO: ${DADOS_EXEMPLO:-1}
+    volumes: [inventario_data:/dados]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/saude')"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    restart: unless-stopped
+
+  chamados:
+    build:
+      context: .
+      dockerfile: services/chamados/Dockerfile
+    env_file: .env
+    environment:
+      CHAMADOS_DATABASE_URL: sqlite:////dados/chamados.db
+      USUARIOS_URL: http://usuarios:8000
+      INVENTARIO_URL: http://inventario:8000
+      REDIS_URL: redis://redis:6379/0
+      TIMEOUT_SERVICOS: "2.0"
+      DADOS_EXEMPLO: ${DADOS_EXEMPLO:-1}
+    volumes: [chamados_data:/dados]
+    depends_on:
+      usuarios: { condition: service_healthy }
+      inventario: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/saude')"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    restart: unless-stopped
+
+  notificacoes:
+    build:
+      context: .
+      dockerfile: services/notificacoes/Dockerfile
+    env_file: .env
+    environment:
+      NOTIFICACOES_DATABASE_URL: sqlite:////dados/notificacoes.db
+      REDIS_URL: redis://redis:6379/0
+      ATIVAR_CONSUMIDOR_EVENTOS: "1"
+    volumes: [notificacoes_data:/dados]
+    depends_on:
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/saude')"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redis_data:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  usuarios_data:
+  inventario_data:
+  chamados_data:
+  notificacoes_data:
+  redis_data:

@@ -1,0 +1,95 @@
+HELPDESK TI - VERSAO EM MICROSSERVICOS
+=====================================
+
+1) EXTRAIR
+Extraia o ZIP para uma pasta simples, por exemplo:
+C:\Projetos\helpdesk-microsservicos
+
+2) CRIAR O .env
+Abra o PowerShell dentro da pasta e rode:
+Copy-Item .env.example .env
+
+Gere um segredo exclusivo:
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+
+Copie o texto gerado e cole depois de JWT_SEGREDO= no arquivo .env.
+Salve o .env. NAO envie esse arquivo ao GitHub.
+
+3) EXECUTAR
+Com o Docker Desktop aberto, no PowerShell da pasta do projeto:
+docker compose up --build
+
+Em outro PowerShell:
+docker compose ps
+
+Abra no navegador:
+http://localhost:8000
+
+Senha das contas de demonstração: Helpdesk2026
+Carla: carla@empresa.com (técnica)
+Ana: ana@empresa.com (solicitante)
+Bruno: bruno@empresa.com (solicitante)
+
+4) TESTAR A FALHA DO INVENTARIO
+Com o sistema rodando:
+docker compose stop inventario
+
+A lista de usuários e chamados deve continuar carregando. Abrir um chamado
+selecionando um equipamento deve mostrar erro 503.
+
+Depois:
+docker compose start inventario
+
+5) TESTAR A SUITE
+Com Python instalado:
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
+pytest -q
+
+6) PUBLICAR NO GITHUB
+Crie um repositório PUBLICO na sua conta com nome parecido com:
+helpdesk-microsservicos-seu-nome
+
+Abra o PowerShell na pasta do projeto e execute os comandos abaixo.
+Eles criam commits por etapa, para registrar a separação dos serviços:
+
+git init
+git add shared requirements.txt requirements-dev.txt .dockerignore .gitignore .env.example
+git commit -m "chore: prepara estrutura base dos microsservicos"
+
+git add services/usuarios
+git commit -m "feat: extrai servico de usuarios e autenticacao"
+
+git add services/inventario
+git commit -m "feat: separa servico de inventario e banco"
+
+git add services/chamados
+git commit -m "feat: separa chamados com comunicacao HTTP"
+
+git add services/notificacoes
+git commit -m "feat: adiciona notificacoes orientadas a eventos"
+
+git add gateway app docker-compose.yml
+git commit -m "feat: adiciona API Gateway e orquestracao Docker"
+
+git add README.md SECURITY.md DESAFIO.md tests .github pytest.ini LEIA-PRIMEIRO.txt
+git commit -m "docs: documenta arquitetura, seguranca e testes"
+
+git branch -M main
+git remote add origin https://github.com/SEU_USUARIO/SEU_REPOSITORIO.git
+git push -u origin main
+
+IMPORTANTE: troque SEU_USUARIO e SEU_REPOSITORIO pelo endereço real criado
+na sua conta. Se o Git pedir autenticação, conclua pelo navegador/Git Credential
+Manager. Não coloque sua senha do GitHub nos comandos.
+
+7) FINALIZAR A ENTREGA
+Depois de publicar o vídeo não listado (YouTube) ou com acesso por link
+(Google Drive), abra README.md e substitua:
+COLOQUE_AQUI_O_LINK_DO_VIDEO
+COLOQUE_AQUI_O_LINK_DO_SEU_REPOSITORIO
+
+Faça commit e push dessa última alteração do README. A entrega ao professor
+exige o link do repositório e o link do vídeo; o vídeo precisa mostrar os oito
+itens na ordem definida no DESAFIO.md.
