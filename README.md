@@ -2,7 +2,7 @@
 
 > **Vídeo de demonstração (4 a 6 minutos):** `COLOQUE_AQUI_O_LINK_DO_VIDEO`
 >
-> **Repositório:** `COLOQUE_AQUI_O_LINK_DO_SEU_REPOSITORIO`
+> **Repositório:** https://github.com/pedroxtx1/helpdesk-microsservicos-pedrogabriel
 
 Projeto acadêmico da disciplina de Arquitetura de Software. Esta versão transforma o HelpDesk TI original, que era um monólito, em serviços independentes, com bancos separados, comunicação HTTP e um API Gateway.
 
