@@ -4,4 +4,4 @@ SQLAlchemy==2.0.50
 pydantic[email]==2.13.5
 PyJWT==2.13.0
 httpx==0.28.1
-redis==6.4.0
+redis==8.1.0
